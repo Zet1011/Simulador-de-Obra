@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador Técnico de Construcción</title>
+  <style>
+    body { font-family: 'Segoe UI'; background: #eaeaea; margin: 0; padding: 20px; }
+    h1 { color: #333; }
+    .panel { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+    label, select, input { display: block; margin: 10px 0; }
+    .stats { background: #f0f0f0; padding: 10px; border-radius: 6px; margin-top: 10px; }
+    button { padding: 10px 20px; margin-top: 10px; font-size: 16px; }
+    .progress { height: 25px; background: #ddd; border-radius: 8px; margin-top: 10px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; background: green; text-align: center; color: white; line-height: 25px; }
+  </style>
+</head>
+<body>
+
+  <h1>🏗️ Simulador Técnico de Construcción</h1>
+
+  <div class="panel">
+    <h2>1. Seleccionar tipo de proyecto</h2>
+    <select id="proyecto">
+      <option value="vivienda">Vivienda unifamiliar</option>
+      <option value="edificio">Edificio de 5 pisos</option>
+      <option value="galpon">Galpón industrial</option>
+    </select>
+  </div>
+
+  <div class="panel">
+    <h2>2. Elegir materiales</h2>
+    <label><input type="checkbox" value="cemento"> Cemento ($15,000)</label>
+    <label><input type="checkbox" value="ladrillos"> Ladrillos ($10,000)</label>
+    <label><input type="checkbox" value="acero"> Acero ($25,000)</label>
+    <label><input type="checkbox" value="madera"> Madera ($8,000)</label>
+  </div>
+
+  <div class="panel">
+    <h2>3. Asignar trabajadores</h2>
+    <label><input type="checkbox" value="arquitecto"> Arquitecto (+$8,000 / -10 días)</label>
+    <label><input type="checkbox" value="ingeniero"> Ingeniero Civil (+$10,000 / -12 días)</label>
+    <label><input type="checkbox" value="albanil"> Albañiles (x3) (+$9,000 / -8 días)</label>
+    <label><input type="checkbox" value="tecnico"> Técnico electricista (+$4,000 / -3 días)</label>
+  </div>
+
+  <div class="panel">
+    <button onclick="simular()">🧠 Iniciar Simulación</button>
+    <div id="resultado" class="stats"></div>
+    <div class="progress">
+      <div id="barra" class="progress-bar">0%</div>
+    </div>
+  </div>
+
+  <script>
+    const proyectos = {
+      vivienda: { presupuesto: 50000, tiempo: 40 },
+      edificio: { presupuesto: 150000, tiempo: 90 },
+      galpon: { presupuesto: 100000, tiempo: 60 }
+    };
+
+    const materiales = {
+      cemento: 15000,
+      ladrillos: 10000,
+      acero: 25000,
+      madera: 8000
+    };
+
+    const trabajadores = {
+      arquitecto: { costo: 8000, dias: -10 },
+      ingeniero: { costo: 10000, dias: -12 },
+      albanil: { costo: 9000, dias: -8 },
+      tecnico: { costo: 4000, dias: -3 }
+    };
+
+    function simular() {
+      const tipo = document.getElementById("proyecto").value;
+      let presupuestoBase = proyectos[tipo].presupuesto;
+      let tiempoBase = proyectos[tipo].tiempo;
+      let presupuestoTotal = 0;
+      let diasExtra = 0;
+
+      const items = document.querySelectorAll('input[type=checkbox]:checked');
+
+      items.forEach(i => {
+        const val = i.value;
+        if (materiales[val]) presupuestoTotal += materiales[val];
+        if (trabajadores[val]) {
+          presupuestoTotal += trabajadores[val].costo;
+          diasExtra += trabajadores[val].dias;
+        }
+      });
+
+      let clima = Math.random() < 0.3 ? 5 : 0; // posibilidad de 5 días extra por lluvia
+      let tiempoFinal = tiempoBase + clima + diasExtra;
+
+      let resultado = `<strong>Presupuesto disponible:</strong> $${presupuestoBase}<br>`;
+      resultado += `<strong>Presupuesto usado:</strong> $${presupuestoTotal}<br>`;
+      resultado += `<strong>Tiempo estimado de obra:</strong> ${tiempoFinal} días (incluye ${clima} días por mal clima)<br><br>`;
+
+      let progreso = 0;
+      if (presupuestoTotal <= presupuestoBase && tiempoFinal <= tiempoBase + 10) {
+        resultado += "<span style='color:green'>✅ Obra planificada correctamente.</span>";
+        progreso = 100;
+      } else if (presupuestoTotal > presupuestoBase) {
+        resultado += "<span style='color:red'>❌ Presupuesto excedido. Revisá materiales o personal.</span>";
+        progreso = 30;
+      } else {
+        resultado += "<span style='color:orange'>⚠️ Posibles demoras por condiciones climáticas o falta de personal.</span>";
+        progreso = 60;
+      }
+
+      document.getElementById("resultado").innerHTML = resultado;
+      document.getElementById("barra").style.width = progreso + "%";
+      document.getElementById("barra").innerText = progreso + "%";
+    }
+  </script>
+
+</body>
+</html>
